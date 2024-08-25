@@ -22,12 +22,15 @@ while True:
                 print(tablename,"Already Exist")
             else:
                 n = int(input("Enter How Many Columns :- "))
+                columns = []
                 for i in range(n):
-                    column = input("Enter Column And Their data Type :- ")
-                    l.append(column)
-                    if column==0:
-                        break
-                sql = f"create table {tablename} ({l})"
+                    column = input("Enter Column Name :- ")
+                    datatype = input(f"Enter Data Type For {column} :- ")
+                    constraint = input(f"Enter Constraint For {column} :- ")
+                    column_defination = f"{column} {datatype} {constraint}".strip()
+                    columns.append(column_defination)
+                column_defination = ", ".join(columns)
+                sql = f"create table {tablename} ({column_defination})"
                 cur.execute(sql)
                 print(tablename,"Created Sucsessfully")
         elif ch==2:
@@ -47,15 +50,14 @@ while True:
             result = cur.fetchone()
             if result:
                 print("1.Chnage ",nname," Name :- ")
-                print("2.Chnage ",nname," Column Name :- ")
                 print("Exit :- ")
                 ch = int(input("Enter Your Choice :- "))
                 if ch==1:
                     name = input("Enter New Table Name :- ")
                     cur.execute(f"alter table {nname} rename to {name};")
-                    print(nname,"Table Name Chnage To ",name,"Successfully")           
+                    print(nname,"Table Name Chnage To ",name,"Successfully")          
             else:
-                print(tablename,"Are Not Exist")
+                print(nname,"Are Not Exist")
         elif ch==4:
             nname = input("Enter Table Name :- ")
             cur.execute(f"""SELECT name FROM sqlite_master WHERE type='table' AND name='{nname}';""")
@@ -64,7 +66,7 @@ while True:
                cur.execute(f"drop table {nname}")
                print(nname," Was Deleted Successfully")
             else:
-                print(tablename,"Are Not Exist")
+                print(nname ,"Are Not Exist")
     elif ch==2:
         print("1.New Records :- ")
         print("2.Display Records :- ")
@@ -74,6 +76,105 @@ while True:
         print("6.Delete Records :- ")
         print("Exit :- ")
         ch = int(input("Enter Your Choice :- "))
+        if ch==1:
+            name = input("Enter The Table Name :- ")
+            cur.execute(f"""SELECT name FROM sqlite_master WHERE type='table' AND name='{name}';""")
+            result = cur.fetchone()
+            if result:
+                print(f"1.Insert One Record Into {name} :- ")
+                print(f"2.Insert Multiplr Record Into {name} :- ")
+                print("Exit :- ")
+                ch = int(input("Enter Your Choice :- "))
+                if ch==1:
+                    l = []
+                    cur.execute(f"pragma table_info ({name})")
+                    rec = cur.fetchall()
+                    for row in rec:
+                        print(f"{row[1]}","\n")                        
+                    record = input("Enter New Record :- ")
+                    sql = f"insert into {name} values ({record});"
+                    cur.execute(sql)
+                    conn.commit()
+                elif ch==2:
+                    n = int(input("Enter How Many Records :- "))  
+                    cur.execute(f"pragma table_info ({name})")
+                    rec = cur.fetchall()
+                    for row in rec:
+                        print(f"{row[1]}","\n")                        
+                    for i in range(n):
+                        record = input("Enter New Record :- ")
+                        sql = f"insert into {name} values ({record});"
+                        cur.execute(sql)
+                    conn.commit()
+            else:
+                print(name,"Are Not Exist")
+        elif ch==2:
+            name = input("Enter The Table Name :- ")
+            cur.execute(f"""SELECT name FROM sqlite_master WHERE type='table' AND name='{name}';""")
+            result = cur.fetchone()
+            if result:
+                rec = cur.execute(f"select * from {name}")
+                for res in rec:
+                    print(res)
+        elif ch==3:
+            name = input("Enter Table Name :- ")
+            cur.execute(f"""SELECT name FROM sqlite_master WHERE type='table' AND name='{name}';""")
+            result=  cur.fetchone()
+            if result:
+                rec = cur.execute(f"select * from {name}")
+                for res in rec:
+                    print(res)
+                column = input("Enter Which Column :- ")
+                old_rec = input("Enter Which Record :- ")
+                new_rec = input("Enter New Record :- ")
+                sql = f"UPDATE {name} SET {column} = ? WHERE {column} = ?;"
+                cur.execute(sql,(new_rec,old_rec))
+                print(old_rec," of ",column," TO ",new_rec," Change Suceccfully")
+            else:
+                print(name," Does Not Exist") 
+        elif ch==4:
+            name = input("Enter Table Name :- ")
+            cur.execute(f"""SELECT name FROM sqlite_master WHERE type='table' AND name='{name}';""")
+            result=  cur.fetchone()
+            if result:
+                rec = cur.execute(f"select * from {name}")
+                for res in rec:
+                    print(res)
+                column = input("Enter Which Column :- ")
+                order = input("ASC or DESC :- ")
+                rec = cur.execute(f"select * from {name} order by {column} {order}")
+                for res in rec:
+                    print(res)
+                print(name," Table ",column," Sorted In ",order," Order Successfully")
+            else:
+                print(name," Does Not Exist") 
+        elif ch==5:
+            name = input("Enter Table Name :- ")
+            cur.execute(f"""SELECT name FROM sqlite_master WHERE type='table' AND name='{name}';""")
+            result=  cur.fetchone()
+            if result:
+                column = input("Enter Which Column :- ")
+                col_rec = input("Enter Which Column Data :- ")
+                rec = cur.execute(f"select * from {name} where {column} = {col_rec}")
+                for res in rec:
+                    print(res)
+                print(name," Table of ",col_rec," Searched Sucessfully")
+            else:
+                print(name," Does Not Exist") 
+        elif ch==6:
+            name = input("Enter Table Name :- ")
+            cur.execute(f"""SELECT name FROM sqlite_master WHERE type='table' AND name='{name}';""")
+            result=  cur.fetchone()
+            if result:
+                rec = cur.execute(f"select * from {name}")
+                for res in rec:
+                    print(res)
+                column = input("Enter Which Column :- ")
+                col_rec = input("Enter Which Record :- ")
+                cur.execute(f"delete from {name} where {column} ={col_rec} ")
+                print(name," Table of ",col_rec," Deleted Sucessfully")
+            else:
+                print(name," Does Not Exist") 
     elif ch==0:
         break
 conn.close()
